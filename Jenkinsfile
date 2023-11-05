@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage("api_auto_test") {
             steps{
-              bat 'go main.go'
+              bat 'go run main.go'
             }
         }
     }
