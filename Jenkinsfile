@@ -6,6 +6,7 @@ pipeline {
         DOCKER_IMAGE_NAME = 'my-golang-web-app' // 镜像名称
         DOCKERFILE = 'Dockerfile' // Dockerfile 文件名
         EC2_INSTANCE_IP = 'ec2-3-14-250-133.us-east-2.compute.amazonaws.com' // EC2 实例的公共 IP 地址
+        SSH_CREDENTIALS_ID = '3b1469a0-15f6-4804-8e0b-b0f72c007d4e'
     }
 
     stages {
@@ -29,7 +30,9 @@ pipeline {
             steps {
                 // 使用 SCP 将 Docker 镜像传输到 EC2 实例
                 script {
-                    bat "scp ${DOCKER_IMAGE_NAME}.tar.gz ec2-user@${EC2_INSTANCE_IP}:/home/ec2-user/"
+                    sshagent(credentials: [SSH_CREDENTIALS_ID]) {
+                        bat "scp ${DOCKER_IMAGE_NAME} ec2-user@${EC2_INSTANCE_IP}:/home/ec2-user/"
+                    }
                 }
             }
         }
@@ -38,7 +41,9 @@ pipeline {
             steps {
                 // 在 EC2 实例上运行 Docker 镜像
                 script {
-                    bat "ssh ec2-user@${EC2_INSTANCE_IP} 'docker load -i /home/ec2-user/${DOCKER_IMAGE_NAME}.tar.gz && docker run -d -p 8088:8088 ${DOCKER_IMAGE_NAME}'"
+                    sshagent(credentials: [SSH_CREDENTIALS_ID]) {
+                        bat "ssh ec2-user@${EC2_INSTANCE_IP} 'docker load -i /home/ec2-user/${DOCKER_IMAGE_NAME} && docker run -d -p 8088:8088 ${DOCKER_IMAGE_NAME}'"
+                    }
                 }
             }
         }
