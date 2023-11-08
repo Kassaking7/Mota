@@ -30,8 +30,6 @@ pipeline {
                 sshagent(credentials: [SSH_CREDENTIALS_ID]) {
                     sh '''
                         ssh -o StrictHostKeyChecking=no ec2-user@${EC2_INSTANCE_IP}
-                        touch test.txt
-                        exit
                         '''
                 }
             }
@@ -39,7 +37,7 @@ pipeline {
         stage('Transfer Docker Image to EC2') {
             steps {
                 sshagent(credentials: [SSH_CREDENTIALS_ID]) {
-                    sh "scp ${DOCKER_IMAGE_NAME} ec2-user@${EC2_INSTANCE_IP}:/home/ec2-user/"
+                    sh "scp -o StrictHostKeyChecking=no ${DOCKER_IMAGE_NAME} ec2-user@${EC2_INSTANCE_IP}:/home/ec2-user/"
 
                 }
             }
@@ -48,7 +46,7 @@ pipeline {
         stage('Run Docker Image on EC2') {
             steps {
                 sshagent(credentials: [SSH_CREDENTIALS_ID]) {
-                    sh "ssh ec2-user@${EC2_INSTANCE_IP} 'docker load -i /home/ec2-user/${DOCKER_IMAGE_NAME} && docker run -d -p 8088:8088 ${DOCKER_IMAGE_NAME}'"
+                    sh "ssh -o StrictHostKeyChecking=no ec2-user@${EC2_INSTANCE_IP} 'docker load -i /home/ec2-user/${DOCKER_IMAGE_NAME} && docker run -d -p 8088:8088 ${DOCKER_IMAGE_NAME}'"
                 }
             }
         }
