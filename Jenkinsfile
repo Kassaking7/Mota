@@ -29,7 +29,7 @@ pipeline {
         stage('Transfer Docker Image to EC2') {
             steps {
                 sshagent(credentials: [SSH_CREDENTIALS_ID]) {
-                        bat "scp ${DOCKER_IMAGE_NAME} ec2-user@${EC2_INSTANCE_IP}:/home/ec2-user/"
+                    bat "scp ${DOCKER_IMAGE_NAME} ec2-user@${EC2_INSTANCE_IP}:/home/ec2-user/"
                 }
             }
         }
