@@ -36,12 +36,12 @@ pipeline {
         }
 
         stage('Copy Docker Image to Workspace') {
-              steps {
-                    script {
-                        // 将 Docker 镜像复制到 Jenkins 工作空间
-                        sh "docker save -o ${WORKSPACE}/${DOCKER_IMAGE_NAME}.tar ${DOCKER_IMAGE_NAME}"
-                    }
-              }
+            steps {
+                script {
+                    // 将 Docker 镜像复制到 Jenkins 工作空间
+                    bat "docker save -o ${WORKSPACE}/${DOCKER_IMAGE_NAME}.tar ${DOCKER_IMAGE_NAME}"
+                }
+            }
         }
 
         stage('Transfer Docker Image to EC2') {
