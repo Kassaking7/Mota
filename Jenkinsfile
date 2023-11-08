@@ -1,20 +1,54 @@
 pipeline {
-    agent any
+    agent any // 在任何可用的 Jenkins 节点上运行
+
+    environment {
+        // 定义需要的环境变量
+        DOCKER_IMAGE_NAME = 'my-golang-web-app' // 镜像名称
+        DOCKERFILE = 'Dockerfile' // Dockerfile 文件名
+        EC2_INSTANCE_IP = 'ec2-3-14-250-133.us-east-2.compute.amazonaws.com' // EC2 实例的公共 IP 地址
+    }
+
     stages {
-        stage("Build Docker Image") {
+        stage('Checkout') {
             steps {
+                // 从代码仓库中检出代码
+                checkout scm
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                // 使用 Dockerfile 构建 Docker 镜像
                 script {
-                    def imageName = 'my-golang-web-app'
-                    docker.build(imageName, '-f Dockerfile .')
+                    bat "docker build -t ${DOCKER_IMAGE_NAME} -f ${DOCKERFILE} ."
                 }
             }
         }
-        stage("Run Docker Container") {
+
+        stage('Transfer Docker Image to EC2') {
             steps {
+                // 使用 SCP 将 Docker 镜像传输到 EC2 实例
                 script {
-                    def containerName = 'my-golang-web-app-container'
-                    docker.image('my-golang-web-app').run('--name ' + containerName + ' -p 8088:8088')
+                    bat "scp ${DOCKER_IMAGE_NAME}.tar.gz ec2-user@${EC2_INSTANCE_IP}:/home/ec2-user/"
                 }
+            }
+        }
+
+        stage('Run Docker Image on EC2') {
+            steps {
+                // 在 EC2 实例上运行 Docker 镜像
+                script {
+                    bat "ssh ec2-user@${EC2_INSTANCE_IP} 'docker load -i /home/ec2-user/${DOCKER_IMAGE_NAME}.tar.gz && docker run -d -p 8088:8088 ${DOCKER_IMAGE_NAME}'"
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // 清理：在 Pipeline 完成后删除构建时生成的 Docker 镜像（可选）
+            script {
+                bat "docker rmi ${DOCKER_IMAGE_NAME}"
             }
         }
     }
