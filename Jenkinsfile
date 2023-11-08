@@ -29,7 +29,7 @@ pipeline {
             steps {
                 sshagent(credentials: [SSH_CREDENTIALS_ID]) {
                     sh '''
-                        ssh ec2-user@${EC2_INSTANCE_IP}
+                        ssh -o StrictHostKeyChecking=no ec2-user@${EC2_INSTANCE_IP}
                         touch test.txt
                         exit
                         '''
