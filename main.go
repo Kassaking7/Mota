@@ -1,8 +1,14 @@
 package main
 
-import "fmt"
+import (
+	"github.com/gin-gonic/gin"
+)
 
 func main() {
-	fmt.Println("Hello, World!")
-	fmt.Println("Second Update!")
+	r := gin.Default()
+
+	// 导入路由
+	ImportRoutes(r)
+
+	r.Run(":8088")
 }
