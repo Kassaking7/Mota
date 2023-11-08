@@ -26,18 +26,16 @@ pipeline {
             }
         }
         stage('Test EC2 Connection') {
-                    steps {
-                        sshagent(credentials: [SSH_CREDENTIALS_ID]) {
-                            bat 'if not exist %USERPROFILE%\\.ssh mkdir %USERPROFILE%\\.ssh'
-                            bat 'attrib +h %USERPROFILE%\\.ssh'
-                            // Fetch SSH host key
-                            bat 'type nul > %USERPROFILE%\\.ssh\\known_hosts'
-                            bat 'ping -n 1 ${EC2_INSTANCE_IP} | findstr "Pinging" | for /f "tokens=1,2" %%A in (@_) do echo %%B %%A >> %USERPROFILE%\\.ssh\\known_hosts'
-                            // Execute your SSH command here
-                            bat 'ssh ec2-user@${EC2_INSTANCE_IP} ...'
-                        }
-                    }
+            steps {
+                sshagent(credentials: [SSH_CREDENTIALS_ID]) {
+                    sh '''
+                        [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh
+                        ssh-keyscan -t rsa,dsa example.com >> ~/.ssh/known_hosts
+                        ssh user@example.com ...
+                        '''
                 }
+            }
+        }
         stage('Transfer Docker Image to EC2') {
             steps {
                 sshagent(credentials: [SSH_CREDENTIALS_ID]) {
