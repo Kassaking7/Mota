@@ -28,22 +28,16 @@ pipeline {
 
         stage('Transfer Docker Image to EC2') {
             steps {
-                // 使用 SCP 将 Docker 镜像传输到 EC2 实例
-                script {
-                    sshagent(credentials: [SSH_CREDENTIALS_ID]) {
+                sshagent(credentials: [SSH_CREDENTIALS_ID]) {
                         bat "scp ${DOCKER_IMAGE_NAME} ec2-user@${EC2_INSTANCE_IP}:/home/ec2-user/"
-                    }
                 }
             }
         }
 
         stage('Run Docker Image on EC2') {
             steps {
-                // 在 EC2 实例上运行 Docker 镜像
-                script {
-                    sshagent(credentials: [SSH_CREDENTIALS_ID]) {
-                        bat "ssh ec2-user@${EC2_INSTANCE_IP} 'docker load -i /home/ec2-user/${DOCKER_IMAGE_NAME} && docker run -d -p 8088:8088 ${DOCKER_IMAGE_NAME}'"
-                    }
+                sshagent(credentials: [SSH_CREDENTIALS_ID]) {
+                    bat "ssh ec2-user@${EC2_INSTANCE_IP} 'docker load -i /home/ec2-user/${DOCKER_IMAGE_NAME} && docker run -d -p 8088:8088 ${DOCKER_IMAGE_NAME}'"
                 }
             }
         }
