@@ -30,8 +30,8 @@ pipeline {
                 sshagent(credentials: [SSH_CREDENTIALS_ID]) {
                     sh '''
                         [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh
-                        ssh-keyscan -t rsa,dsa example.com >> ~/.ssh/known_hosts
-                        ssh user@example.com ...
+                        ssh-keyscan -t rsa,dsa ${EC2_INSTANCE_IP} >> ~/.ssh/known_hosts
+                        ssh ec2-user@${EC2_INSTANCE_IP} ...
                         '''
                 }
             }
