@@ -28,9 +28,9 @@ pipeline {
         stage('Test EC2 Connection') {
                     steps {
                         sshagent(credentials: [SSH_CREDENTIALS_ID]) {
-                            bat "[ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh
-                                           ssh-keyscan -t rsa,dsa example.com >> ~/.ssh/known_hosts
-                                           ssh ec2-user@${EC2_INSTANCE_IP}"
+                            bat "[ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh \n
+                            ssh-keyscan -t rsa,dsa example.com >> ~/.ssh/known_hosts \n
+                            ssh ec2-user@${EC2_INSTANCE_IP}"
 
                         }
                     }
