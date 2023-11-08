@@ -34,11 +34,20 @@ pipeline {
                 }
             }
         }
+
+        stage('Copy Docker Image to Workspace') {
+              steps {
+                    script {
+                        // 将 Docker 镜像复制到 Jenkins 工作空间
+                        sh "docker save -o ${WORKSPACE}/${DOCKER_IMAGE_NAME}.tar ${DOCKER_IMAGE_NAME}"
+                    }
+              }
+        }
+
         stage('Transfer Docker Image to EC2') {
             steps {
                 sshagent(credentials: [SSH_CREDENTIALS_ID]) {
-                    sh "scp -o StrictHostKeyChecking=no ${DOCKER_IMAGE_NAME} ec2-user@${EC2_INSTANCE_IP}:/home/ec2-user/"
-
+                    sh "scp -o StrictHostKeyChecking=no ${WORKSPACE}/${DOCKER_IMAGE_NAME}.tar ec2-user@${EC2_INSTANCE_IP}:/home/ec2-user/"
                 }
             }
         }
@@ -46,7 +55,7 @@ pipeline {
         stage('Run Docker Image on EC2') {
             steps {
                 sshagent(credentials: [SSH_CREDENTIALS_ID]) {
-                    sh "ssh -o StrictHostKeyChecking=no ec2-user@${EC2_INSTANCE_IP} 'docker load -i /home/ec2-user/${DOCKER_IMAGE_NAME} && docker run -d -p 8088:8088 ${DOCKER_IMAGE_NAME}'"
+                    sh "ssh -o StrictHostKeyChecking=no ec2-user@${EC2_INSTANCE_IP} 'docker load -i /home/ec2-user/${DOCKER_IMAGE_NAME}.tar && docker run -d -p 8088:8088 ${DOCKER_IMAGE_NAME}'"
                 }
             }
         }
