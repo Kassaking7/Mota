@@ -21,7 +21,7 @@ pipeline {
             steps {
                 // 使用 Dockerfile 构建 Docker 镜像
                 script {
-                    bat "docker build -t ${DOCKER_IMAGE_NAME} -f ${DOCKERFILE} ."
+                    sh "docker build -t ${DOCKER_IMAGE_NAME} -f ${DOCKERFILE} ."
                 }
             }
         }
@@ -31,7 +31,9 @@ pipeline {
                     sh '''
                         [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh
                         ssh-keyscan -t rsa,dsa ${EC2_INSTANCE_IP} >> ~/.ssh/known_hosts
-                        ssh ec2-user@${EC2_INSTANCE_IP} ...
+                        ssh ec2-user@${EC2_INSTANCE_IP}
+                        touch test.txt
+                        exit
                         '''
                 }
             }
@@ -39,7 +41,7 @@ pipeline {
         stage('Transfer Docker Image to EC2') {
             steps {
                 sshagent(credentials: [SSH_CREDENTIALS_ID]) {
-                    bat "scp ${DOCKER_IMAGE_NAME} ec2-user@${EC2_INSTANCE_IP}:/home/ec2-user/"
+                    sh "scp ${DOCKER_IMAGE_NAME} ec2-user@${EC2_INSTANCE_IP}:/home/ec2-user/"
 
                 }
             }
@@ -48,7 +50,7 @@ pipeline {
         stage('Run Docker Image on EC2') {
             steps {
                 sshagent(credentials: [SSH_CREDENTIALS_ID]) {
-                    bat "ssh ec2-user@${EC2_INSTANCE_IP} 'docker load -i /home/ec2-user/${DOCKER_IMAGE_NAME} && docker run -d -p 8088:8088 ${DOCKER_IMAGE_NAME}'"
+                    sh "ssh ec2-user@${EC2_INSTANCE_IP} 'docker load -i /home/ec2-user/${DOCKER_IMAGE_NAME} && docker run -d -p 8088:8088 ${DOCKER_IMAGE_NAME}'"
                 }
             }
         }
@@ -58,7 +60,7 @@ pipeline {
         always {
             // 清理：在 Pipeline 完成后删除构建时生成的 Docker 镜像（可选）
             script {
-                bat "docker rmi ${DOCKER_IMAGE_NAME}"
+                sh "docker rmi ${DOCKER_IMAGE_NAME}"
             }
         }
     }
