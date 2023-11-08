@@ -39,7 +39,7 @@ pipeline {
             steps {
                 script {
                     // 将 Docker 镜像复制到 Jenkins 工作空间
-                    bat "docker save -o ${WORKSPACE}/${DOCKER_IMAGE_NAME}.tar ${DOCKER_IMAGE_NAME}"
+                    bat "docker save -o ${WORKSPACE}\\${DOCKER_IMAGE_NAME}.tar ${DOCKER_IMAGE_NAME}"
                 }
             }
         }
@@ -47,7 +47,7 @@ pipeline {
         stage('Transfer Docker Image to EC2') {
             steps {
                 sshagent(credentials: [SSH_CREDENTIALS_ID]) {
-                    sh "scp -o StrictHostKeyChecking=no ${WORKSPACE}/${DOCKER_IMAGE_NAME}.tar ec2-user@${EC2_INSTANCE_IP}:/home/ec2-user/"
+                    bat "scp -o StrictHostKeyChecking=no ${WORKSPACE}\\${DOCKER_IMAGE_NAME}.tar ec2-user@${EC2_INSTANCE_IP}:/home/ec2-user/"
                 }
             }
         }
