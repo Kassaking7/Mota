@@ -30,7 +30,7 @@ pipeline {
                 sshagent(credentials: [SSH_CREDENTIALS_ID]) {
                     sh '''
                         [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh
-                        ssh-keyscan -t rsa,dsa ec2-3-14-250-133.us-east-2.compute.amazonaws.com >> ~/.ssh/known_hosts
+                        ssh-keyscan -t rsa,dsa ${EC2_INSTANCE_IP}>> ~/.ssh/known_hosts
                         ssh ec2-user@${EC2_INSTANCE_IP}
                         touch test.txt
                         exit
